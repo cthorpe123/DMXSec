@@ -13,6 +13,8 @@ const double c = 3e5;
 // Reduced Planck's constant in GeVs
 const double hbar = 6.582e-19;
 
+
+// Legendre Polynomial calculator
 class LegendrePolynomial {
 
   public:
@@ -64,7 +66,7 @@ class CrossSectionModel
   public:
     CrossSectionModel(double Lambda, double gs, int s);
     
-    double xsec_Er(const double& Er) const;
+    double xsec_Er(const double& costheta) const;
     double xsec_costheta(const double& costheta) const;
     void set_m(double m){ _m = m; };
     void set_M(double M){ _M = M; };
@@ -87,6 +89,7 @@ CrossSectionModel::CrossSectionModel(double Lambda, double gs, int s) : _Lambda(
 
 }
 
+// Cross section with respect to costheta (costheta in the lab frame)
 double CrossSectionModel::xsec_costheta(const double& costheta) const
 {
 
@@ -95,19 +98,23 @@ double CrossSectionModel::xsec_costheta(const double& costheta) const
     return 0;
   }
 
-  // Generate the momenta
+  const NRKinematics kin(_m,_M,_v);
+  double jacobian = 2*_M*kin.v_N(costheta)*kin.v_N(costheta)/costheta; 
+  //std::cout << "jacobian = " << jacobian << std::endl;
+
+  return jacobian*xsec_Er(costheta);
+
+}
+
+// Cross section with respect to nuclear recoil energy in the lab frame 
+double xsec_Er(const double& costheta) const
+{
+
   const NRKinematics kin(_m,_M,_v);
   TVector3 p = kin.p(costheta);
   TVector3 k = kin.k(costheta);
   TVector3 pprime = kin.pprime(costheta);
   TVector3 kprime = kin.kprime(costheta);
-
-  double jacobian = 2*_M*kin.v_N(costheta)*kin.v_N(costheta)/costheta; 
-  std::cout << "jacobian = " << jacobian << std::endl;
-
-   
-
-  return 0;
 
 }
 
